@@ -316,9 +316,42 @@ def predict_detection_segmentation(
         labels = output["labels"].cpu().numpy().tolist()
         masks = (output["masks"] > 0.5).squeeze(1).cpu().numpy().astype(np.uint8)
 
+        h, w = img.size[1], img.size[0]
+
+        final_boxes = []
+        final_scores = []
+        final_labels = []
+        final_masks = []
+
+        for i in range(len(scores)):
+
+            score = float(scores[i])
+
+
+            if score < 0.3:
+                continue
+
+            x1, y1, x2, y2 = boxes[i]
+            x1 = max(0, min(x1, w))
+            x2 = max(0, min(x2, w))
+            y1 = max(0, min(y1, h))
+            y2 = max(0, min(y2, h))
+
+            final_boxes.append([float(x1), float(y1), float(x2), float(y2)])
+            final_scores.append(score)
+            final_labels.append(int(labels[i]))
+            
+            mask = masks[i, 0]
+            mask = (mask > 0.5).astype(np.uint8)
+
+            final_masks.append(mask)
+
         results.append({
-            "boxes": boxes,
-            "scores": scores,
-            "labels": labels,
-            "masks": masks
+            "boxes": final_boxes,
+            "scores": final_scores, 
+            "labels": final_labels,
+            "masks": final_masks
         })
+
+    return results
+
