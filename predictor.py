@@ -310,7 +310,7 @@ def predict_detection_segmentation(
     with torch.no_grad():
         outputs = model(tensors)
 
-    for output in outputs:
+    for img , output in zip(images, outputs):
         boxes = output["boxes"].cpu().numpy().tolist()
         scores = output["scores"].cpu().numpy().tolist()
         labels = output["labels"].cpu().numpy().tolist()
