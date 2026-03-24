@@ -226,7 +226,7 @@ def load_detection_model(folder: str, device: str) -> Any:
     print(f"Loading detection + segmentation model from {get_weights_path}...")
     num_classes = len(SEG_CLASS_MAPPING)
 
-    model=torchvision.models.detection.maskrcnn_resnet50_fpn(weights="DEFAULT",num_classes=num_classes,min_size=512,
+    model=torchvision.models.detection.maskrcnn_resnet50_fpn(weights="DEFAULT",min_size=512,
         max_size=512)
     
     in_features = model.roi_heads.box_predictor.cls_score.in_features
