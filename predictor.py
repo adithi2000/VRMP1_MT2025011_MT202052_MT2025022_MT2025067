@@ -51,11 +51,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Any, Dict, List
-
+import os
+import torchvision.models as models
 import numpy as np
 import torch
 from PIL import Image
-
+import torch.nn as nn
 import torchvision
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
@@ -78,11 +79,11 @@ import torchvision.transforms as T
 #       4: "skirt",
 #   }
 CLS_CLASS_MAPPING: Dict[int, str] = {
-    # 0: "short sleeve top",
-    # 1: "long sleeve top",
-    # 2: "trousers",
-    # 3: "shorts",
-    # 4: "skirt",
+     0: "long sleeve top",
+     1: "short sleeve top",
+     2: "shorts",
+     3: "skirt",
+     4: "trousers",
 }
 
 # Detection + Segmentation: maps your model's output index → class name.
@@ -158,7 +159,23 @@ def load_classification_model(folder: str, device: str) -> Any:
     - The returned object can be a dict, a nn.Module, or anything
       your prediction function expects.
     """
-    raise NotImplementedError("TODO: implement load_classification_model")
+
+    #path
+    folder=Path(folder)
+    model_path=_find_weights(folder,"cls")
+    #rebuilding model architecture
+    model=models.resnet50(weights=None)
+    model.fc=nn.Linear(model.fc.in_features,5)
+
+    #Load weights
+    state_dict=torch.load(model_path,map_location=device)
+    model.load_state_dict(state_dict)
+    #Move to device
+    model=model.to(device)
+    #evaluation mode
+    model.eval()
+    return model
+    #raise NotImplementedError("TODO: implement load_classification_model")
 
 
 def predict_classification(model: Any, images: List[Image.Image]) -> List[Dict]:
@@ -193,7 +210,22 @@ def predict_classification(model: Any, images: List[Image.Image]) -> List[Dict]:
     >>> results[0]
     {"labels": [1, 0, 0, 1, 0]}
     """
-    raise NotImplementedError("TODO: implement predict_classification")
+    device=next(model.parameters()).device
+    transform=T.Compose([T.Resize((224,224)),T.ToTensor(),T.Normalize(mean=[0.485,0.456,0.406],std=[0.229,0.224,0.225])])
+    results=[]
+    model.eval()
+    with torch.no_grad():
+        for img in images:
+            image=transform(img)
+            image=image.unsqueeze(0).to(device)
+            #forward pass
+            outputs=model(image)
+            #sigmoid
+            probs=torch.sigmoid(outputs)[0]
+            preds=(probs>0.5).int().cpu().tolist()
+            results.append({"labels":preds})
+    return results
+    #raise NotImplementedError("TODO: implement predict_classification")
 
 
 # ═══════════════════════════════════════════════════════════════════
