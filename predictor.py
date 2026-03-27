@@ -274,7 +274,7 @@ def load_detection_model(folder: str, device: str) -> Any:
     model.roi_heads.detections_per_img = 300
     model.roi_heads.score_thresh = 0.3
 
-    state_dict = torch.load(get_weights_path, map_location=device)
+    state_dict = torch.load(get_weights_path, map_location=device,weights_only=False)
 
     
    
@@ -378,8 +378,10 @@ def predict_detection_segmentation(
             final_scores.append(score)
             final_labels.append(int(labels[i]))
             
-            mask = masks[i, 0]
-            mask = (mask > 0.5).astype(np.uint8)
+            mask = masks[i]
+            if mask.shape != (h, w):
+                mask = Image.fromarray(mask).resize((w, h), resample=Image.NEAREST)
+                mask = np.array(mask).astype(np.uint8)
 
             final_masks.append(mask)
 
