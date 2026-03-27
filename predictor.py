@@ -274,8 +274,14 @@ def load_detection_model(folder: str, device: str) -> Any:
     model.roi_heads.detections_per_img = 300
     model.roi_heads.score_thresh = 0.3
 
-    state_dict = torch.load(get_weights_path, map_location=device)
-    model.load_state_dict(state_dict)
+    state_dict = torch.load(get_weights_path, map_location=device,weights_only=False)
+
+    if "model_state_dict" in state_dict:
+         model.load_state_dict(state_dict["model_state_dict"])
+    else:
+        model.load_state_dict(state_dict)
+    
+    print(f"Model loaded successfully {('Success' if model is not None else 'Failed')}.")
 
     model.to(device)
     model.eval()
