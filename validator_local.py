@@ -390,7 +390,6 @@ def main():
     print("=" * 60)
     print(f"  VALIDATOR — {folder.name}")
     print("=" * 60)
-
     # ─── 1. Required files ────────────────────────────────────────
     print("\n[1/6] Checking required files ...")
     abort = False
