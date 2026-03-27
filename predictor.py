@@ -274,12 +274,11 @@ def load_detection_model(folder: str, device: str) -> Any:
     model.roi_heads.detections_per_img = 300
     model.roi_heads.score_thresh = 0.3
 
-    state_dict = torch.load(get_weights_path, map_location=device,weights_only=False)
+    state_dict = torch.load(get_weights_path, map_location=device)
 
-    if "model_state_dict" in state_dict:
-         model.load_state_dict(state_dict["model_state_dict"])
-    else:
-        model.load_state_dict(state_dict)
+    
+   
+    model.load_state_dict(state_dict)
     
     print(f"Model loaded successfully {('Success' if model is not None else 'Failed')}.")
 
@@ -393,3 +392,22 @@ def predict_detection_segmentation(
 
     return results
 
+# if __name__ == "__main__":
+#     # Example usage:
+#     # folder = "D:\New folder\VRMP1_MT2025011_MT2025052_MT2025022_MT2025067\model_files\seg.pth"  # Change to your actual folder path/
+#     folder = os.path.dirname(os.path.abspath("./model_files"))
+#     print(f"Using folder: {folder}")
+#     device = "cuda" if torch.cuda.is_available() else "cpu"
+#     print(f"Using device: {device}")
+
+#     # Load models
+#     # cls_model = load_classification_model(folder, device)
+#     seg_model = load_detection_model(folder, device)
+
+#     # Example inference (replace with actual images)
+#     dummy_image = Image.new("RGB", (512, 512), color="white")
+#     # cls_results = predict_classification(cls_model, [dummy_image])
+#     seg_results = predict_detection_segmentation(seg_model, [dummy_image])
+
+#     # print("Classification results:", cls_results)
+#     print("Detection + Segmentation results:", seg_results)
